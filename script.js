@@ -10,8 +10,10 @@
 function setup() {
    createCanvas(400,400);
    background(95);
+   
   }
 
 function draw() {
-  
+   ellipse(10, 10 , 50);
+  rect(40,40,40,40)
   }
