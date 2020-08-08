@@ -1,159 +1,197 @@
-// Add to this list as you consult the p5.js documentation for other functions.
-/* global createCanvas, colorMode, HSB, width, height, random, background, fill, 
-          color, random, rect, ellipse, stroke, image, loadImage, keyCode,
-          collideCircleCircle, text, textSize, mouseX, mouseY, strokeWeight, line, 
-          mouseIsPressed, windowWidth, windowHeight, noStroke, UP_ARROW, triangle 
-          frameRate frameCount round startPlants startHerbivores startCarnivores
-          createGui abs, imageMode, CENTER noLoop collideRectCircle*/
+/*global createCanvas, imageMode, Virus, stroke, strokeWeight, LEFT, RIGHT, round, textAlign, rectMode, CORNER, random, key, image, collidePointCircle, ellipse, CORNERS, colorMode, loadImage, textSize, getAudioContext, loadFont, textFont, textAlign, text, noStroke, HSB, background, collideRectCircle, mouseX, mouseY, fill, windowWidth, windowHeight, width, height, soundFormats, loadSound, rect, rectMode, CENTER*/
 
-
-let v1, viruses, userHasLost;
-let v2, vaccines;
-let v3, medicine;
-let lives = 3;
+let canvas,
+  livingRoomImg,
+  imgX,
+  imgY,
+  font,
+  finalImg,
+  virusImg,
+  viruses,
+  currentVirus,
+  virus_attach,
+  get_medicine,
+  timer,
+  title,
+  health,
+  gameIsOver = false,
+  gameOverText = "",
+  timerCushion,
+  userIsInfected = false,
+  infectedViruses = [], screen;
 
 function preload() {
-  v1 = loadImage(
-    "https://cdn.glitch.com/6bb45751-0572-4522-8e4d-c9c572b8fe52%2Fsmilie-4901128_960_720.png?v=1596753249162"
+  virus_attach = loadSound("https://cdn.glitch.com/b409a92a-1f80-49e0-a812-620661773dbd%2Fvirus_attach.wav?v=1596838911494")
+  title = loadFont("https://cdn.glitch.com/b409a92a-1f80-49e0-a812-620661773dbd%2FYear%202000.ttf?v=1596836354238")
+  font = loadFont(
+    "https://cdn.glitch.com/b409a92a-1f80-49e0-a812-620661773dbd%2FHeading-Pro-Wide-Regular-trial.ttf?v=1596834499234"
   );
-  v2 = loadImage(
-    "https://cdn.glitch.com/6bb45751-0572-4522-8e4d-c9c572b8fe52%2FPicture1.png?v=1596757444345"
+  livingRoomImg = loadImage(
+    "https://cdn.glitch.com/b409a92a-1f80-49e0-a812-620661773dbd%2Fliving-room-interior-cartoon-vector-20941629.jpg?v=1596816373329"
   );
-  v3 = loadImage(
-    "https://cdn.glitch.com/6bb45751-0572-4522-8e4d-c9c572b8fe52%2FPill-256.png?v=1596757997549"
+
+  virusImg = loadImage(
+    "https://cdn.glitch.com/b409a92a-1f80-49e0-a812-620661773dbd%2F6bb45751-0572-4522-8e4d-c9c572b8fe52_smilie-4901128_960_720.png?v=1596824410604"
   );
 }
 
 function setup() {
-  colorMode(HSB, 360, 100, 100);
-  createCanvas(400, 400);
-  background(10);
-  fill("white");
-  userHasLost = false;
-
-  viruses = new Array(5);
-  for (let i = 0; i < viruses.length; i++) {
-    viruses[i] = new Virus(v1);
+  canvas = createCanvas(400, 400);
+  canvas.parent("canvas-div");
+  colorMode(HSB);
+  imgX = width / 2;
+  imgY = height / 2;
+  image(livingRoomImg, imgX, imgY);
+  livingRoomImg.resize(windowWidth, 0);
+  viruses = [];
+  for (let i = 0; i < 3; i++) {
+    viruses.push(new Virus());
   }
 
-  vaccines = new Array(2);
-  for (let i = 0; i < vaccines.length; i++) {
-   
-      vaccines[i] = new PowerUp(v2);
-    
-    
-  }
-
-  medicine = new Array(2);
-  for (let i = 0; i < medicine.length; i++) {
-    medicine[i] = new PowerUp(v3);
-  }
+  timer = 1000;
+  timerCushion = timer / 100;
+  health = 1000;
 }
 
 function draw() {
-  //rect(40,40,40,40)
-  background(10);
+  background(95);
+  imageMode(CENTER);
+  image(livingRoomImg, imgX, imgY);
 
+  checkMousePosition();
+  for (let i = 0; i < viruses.length; i++) {
+    viruses[i].show();
+  }
+
+  for (let i = 0; i < infectedViruses.length; i++) {
+    infectedViruses[i].show();
+  }
+
+  if (gameIsOver) {
+    fill("black");
+    userIsInfected = false;
+    textAlign(CENTER);
+    text(gameOverText, width / 2, height / 2);
+  }
+
+  if (userIsInfected) {
+    textAlign(CENTER);
+    fill("black");
+    text(
+      "Oh no! The virus got too close and infected you!",
+      width / 2,
+      height / 2 - 10
+    );
+    text("Your health is decreasing!", width / 2, height / 2 + 10);
+    text("Look for medicine to heal you!", width / 2, height / 2 + 30);
+  }
+  stroke(255);
+  strokeWeight(4);
+  textFont(font);
+  handleTime();
+  handleHealth("");
+  fill("black");
+  textAlign(LEFT);
+  text("Time", 10, 15);
+  textAlign(RIGHT);
+  text("Health", width - 20, 15);
+}
+
+function mouseClicked() {
+  if (!gameIsOver) {
+    for (let i = 0; i < viruses.length; i++) {
+      if (viruses[i].checkClicked()) {
+        console.log("clicked");
+        //userIsFighting = true;
+        currentVirus = viruses[i];
+      }
+    }
+  }
+}
+
+function keyPressed() {
+  if (key === "a") {
+    currentVirus.isAttacked = false;
+    currentVirus.isAlive = false;
+  }
+}
+function checkMousePosition() {
+  if (!gameIsOver) {
+    let endX = imgX + windowWidth / 2;
+    let endY = imgY + livingRoomImg.height / 2;
+    let xMove = 0;
+    let yMove = 0;
+
+    if (mouseX > width && endX > width) {
+      xMove = -5;
+    } else if (mouseX < 0 && endX < windowWidth) {
+      xMove = 5;
+    }
+
+    if (mouseY > height && endY > height) {
+      yMove = -5;
+    } else if (mouseY < 0 && endY < livingRoomImg.height) {
+      yMove = 5;
+    }
+
+    imgX += xMove;
+    imgY += yMove;
+    for (let i = 0; i < viruses.length; i++) {
+      viruses[i].move(xMove, yMove);
+    }
+  } else {
+  }
+}
+
+function removeDeadVirus() {
   for (let i = viruses.length - 1; i >= 0; i--) {
-    viruses[i].draw();
-    viruses[i].move();
-    if (viruses[i].size >= viruses[i].maxSize) {
-      viruses[i].checkStrength();
-      viruses.splice(i, 1, new Virus(v1));
-    } else if (lives == 0) {
-      userHasLost = true;
-      viruses[i].size += 0;
-      noLoop();
+    if (viruses[i] === currentVirus) {
+      viruses.splice(i, 1);
     }
   }
 
-//   for (let i = 0; i < vaccines.length; i++) {
-//     vaccines[i].draw();
-//     vaccines[i].move();
-//   }
-
-  for (let i = 0; i < medicine.length; i++) {
-    medicine[i].draw();
-    medicine[i].move();
-    medicine[i].recover();
-  }
-
-  if (userHasLost) {
-    text("You Lost", 10, 20);
-  }
-
-  text(`Health: ${lives}`, 330, 20);
-}
-
-
-//define Viruses and functions
-class Virus {
-  constructor(img) {
-    this.size = random(5, 50);
-    this.x = random(width - this.size);
-    this.y = random(height - this.size);
-    this.image = img;
-    this.maxSize = 100;
-    this.strength = round(random(1, 6));
-  }
-
-  checkStrength() {
-    if (this.strength == 5) {
-      lives--;
-    }
-  }
-
-  move() {
-    imageMode(CENTER);
-    if (this.size >= this.maxSize) {
-      fill("white");
-    } else if (this.size < this.maxSize) {
-      this.size += 0.1;
-    }
-  }
-
-  draw() {
-    image(this.image, this.x, this.y, this.size, this.size);
+  if (viruses.length === 0) {
+    gameOver("win");
   }
 }
 
-
-//define powerups and functions
-class PowerUp {
-  constructor(img) {
-    this.size = random(5, 30);
-    this.x = random(width - this.size);
-    this.y = random(height - this.size);
-    this.image = img;
-    this.maxSize = 100;
-    this.fallSpeed = random(1, 2);
-    this.reset = random(-400, 100);
-    //this.strength = round(random(1, 6));
-  }
-
-  draw() {
-    image(this.image, this.x, this.y, this.size, this.size);
-  }
-
-  move() {
-    this.y += this.fallSpeed;
-    // If it goes off the screen...
-    if(frameCount % 200 == 0){
-    if (this.y > height) {
-      // ...reset it...
-      this.y = this.reset;
-      // ...and move it somewhere random.
-      this.x = random(width - this.size);
-    }
+function handleTime() {
+  if (!gameIsOver) {
+    if (timer > 0) {
+      timer--;
+    } else {
+      gameOver("time");
     }
   }
 
-  heal() {}
+  fill(timer / timerCushion, 100, 100);
 
-  recover() {
-    if (collideRectCircle(this.x, this.y, this.size, this.size, mouseX, mouseY, 20)) {
-      lives ++;
-      this.y = this.reset;
-    }
+  rectMode(CORNER);
+  rect(10, 20, timer / timerCushion, 10);
+}
+
+function handleHealth() {
+  if (userIsInfected) {
+    health -= 0.5;
   }
+
+  if (health > 0) {
+    fill(health / 10, 100, 100);
+    rectMode(CORNERS);
+    rect(width - 10, 20, width - health / 10, 30);
+  } else {
+    gameOver("health");
+  }
+}
+
+function gameOver(result) {
+  if (result === "health") {
+    gameOverText = "Your health was too low to continue.";
+  } else if (result === "time") {
+    gameOverText = "You ran out of time.";
+  } else if (result === "win") {
+    gameOverText = "Yay! You killed all of the viruses!";
+  }
+
+  gameIsOver = true;
 }
