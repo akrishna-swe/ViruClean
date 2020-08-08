@@ -106,9 +106,9 @@ function setup() {
   colorMode(HSB);
   if (screen === 2) {
     playScreenSetup();
-   } //else if (screen === 1) {
-  //   tutorialScreenSetup();
-  // }
+   } else if (screen === 1) {
+     tutorialScreenSetup();
+   }
 
   //see buttons.js for button object constructor
   easyButton = new Button(width / 4, height * 0.75, "Easy", 0);
@@ -119,8 +119,8 @@ function setup() {
   tryAgainButton = new Button(width * 0.37, height * 0.75, "Play Again", level, 2);
   homeButton = new Button(width * 0.65, height * 0.75, "Home", level, 1);
   
-  backButton = new Button(width * .65, height * .92, "Back");
-  nextButton = new Button(width * .87, height * .92, "Next")
+  backButton = new Button(width * .15, height * .92, "Back");
+  //nextButton = new Button(width * .87, height * .92, "Next")
 }
 
 function classifyVideo() {
@@ -152,8 +152,8 @@ function draw() {
     drawEndScreen();
   }
   
-  textFont("Helvetica");
-  text(label, 20, 100); //debug screen order
+  // textFont("Helvetica");
+  // text(frameCount, 20, 100); //debug screen order
 }
 
 //see buttons.js for show and mousePressed functions
@@ -236,9 +236,9 @@ function moveImageX() {
   let xMove = 0;
   let endX = imgX + livingRoomImg.width / 2;
 
-  if (label == "Right" && endX > width) {
+  if (mouseX > width && endX > width) {
     xMove = -5;
-  } else if (label == "Left" && endX < livingRoomImg.width) {
+  } else if (mouseX < 0 && endX < livingRoomImg.width) {
     xMove = 5;
   }
 
@@ -250,9 +250,9 @@ function moveImageY() {
   let endY = imgY + livingRoomImg.height / 2;
 
   let xMove = moveImageX();
-  if (label == "Down"  && endY > height) {
+  if (mouseY > height && endY > height) {
     yMove = -5;
-  } else if (label == "Up" && endY < livingRoomImg.height) {
+  } else if (mouseY < 0 && endY < livingRoomImg.height) {
     yMove = 5;
   }
 
