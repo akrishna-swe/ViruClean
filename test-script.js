@@ -35,7 +35,10 @@ let canvas,
   virusClicked,
   mediumButtonClicked,
   hardButtonClicked,
-  numViruses;
+  numViruses, 
+  easyButton, 
+  mediumButton,
+  hardButton;
 
 function preload() {
   virusClicked = loadSound(
@@ -69,7 +72,7 @@ function preload() {
 }
 
 function setup() {
-  canvas = createCanvas(400, 400);
+  canvas = createCanvas(600, 600);
   canvas.parent("canvas-div");
   colorMode(HSB);
   if (screen === 1) {
@@ -82,7 +85,14 @@ function setup() {
   easyButtonY = height * 0.75;
   mediumButtonY = height * 0.75;
   hardButtonY = height * 0.75;
+  
+  //see buttons.js for button object constructor
+  easyButton = new Button(width / 4,easyButtonY, "Easy", 0);
+  mediumButton = new Button(width / 2, mediumButtonY, "Medium", 1);
+  hardButton = new Button(width * 0.75, hardButtonY, "Hard", 2);
 }
+
+//see screens.js for draw screen functions
 function draw() {
   if (screen === 0) {
     drawStartScreen();
@@ -93,135 +103,15 @@ function draw() {
   }
 }
 
-function playScreenSetup() {
-  if (level === 0) {
-    numViruses = 3;
-    timer = 1000;
-    health = 1000;
-  } else if (level === 1) {
-    numViruses = 6;
-    timer = 1500;
-    health = 750;
-  } else if (level === 2) {
-    numViruses = 9;
-    timer = 2000;
-    health = 500;
-  }
-  infectedViruses = [];
-  viruses = [];
-  userIsInfected = false;
-  gameIsOver = false;
-  gameOverText = "";
-  imgX = width / 2;
-  imgY = height / 2;
-  image(livingRoomImg, imgX, imgY);
-  livingRoomImg.resize(windowWidth, 0);
-
-  for (let i = 0; i < numViruses; i++) {
-    viruses.push(new Virus());
-  }
-
-  timerCushion = timer / 100;
-  healthCushion = health / 100;
-}
-
-function drawStartScreen() {
-  background("#ffc9b2");
-  fill(255);
-  textFont(title);
-  textSize(70);
-  textAlign(CENTER);
-  text("title", width / 2, height * 0.25);
-  textFont(font);
-  textSize(12);
-  text("Pose for the camera using these motions to\n find and eradicate the virus!", width / 2, height * 0.35);
-  text("Pick a Level to Start", width / 2, height * 0.65);
-  textSize(8);
-  text("made for melonjam twentytwenty", width / 2, height * 0.95);
-  drawButtons();
-}
-
-
-function drawPlayScreen() {
-  imageMode(CENTER);
-  image(livingRoomImg, imgX, imgY);
-
-  checkMousePosition();
-  for (let i = 0; i < viruses.length; i++) {
-    viruses[i].show();
-  }
-
-  for (let i = 0; i < infectedViruses.length; i++) {
-    infectedViruses[i].show();
-  }
-
-  if (gameIsOver) {
-    fill("black");
-    userIsInfected = false;
-    textAlign(CENTER);
-    text(gameOverText, width / 2, height / 2);
-  }
-
-  if (userIsInfected) {
-    textAlign(CENTER);
-    fill("black");
-    text(
-      "Oh no! The virus got too close and infected you!",
-      width / 2,
-      height / 2 - 10
-    );
-    text("Your health is decreasing!", width / 2, height / 2 + 10);
-    text("Look for medicine to heal you!", width / 2, height / 2 + 30);
-    // virusAttach.play();
-  }
-  stroke(255);
-  strokeWeight(4);
-  textFont(font);
-  handleTime();
-  handleHealth("");
-  fill("black");
-  textAlign(LEFT);
-  text("Time", 10, 15);
-  textAlign(RIGHT);
-  text("Health", width - 20, 15);
-  textAlign(CENTER);
-  if (level === 0 || level === 1) {
-    text("Viruses Remaining: ", width / 2, height * 0.9);
-    textFont("Helvetica");
-    text(viruses.length, width * 0.7, height * 0.9);
-  }
-
-  //console.log(viruses.length);
-}
-
-function drawEndScreen() {
-  noStroke();
-  background("#ffc9b2");
-  fill(255);
-  textFont(font);
-  textSize(12);
-  textAlign(CENTER);
-  text(gameOverText, width / 2, height * 0.45);
-  text("click to try again", width / 2, height * 0.55);
-}
-
+//see buttons.js for show and mousePressed functions
 function drawButtons() {
-  rectMode(CENTER);
-  noStroke();
-  fill(buttonShadowFill);
-  rect(width / 2, height * 0.75 + 5, buttonW, buttonH, 10);
-  rect(width / 4, height * 0.75 + 5, buttonW, buttonH, 10);
-  rect(width * 0.75, height * 0.75 + 5, buttonW, buttonH, 10);
-  fill(buttonFill);
-  rect(width / 2, mediumButtonY, buttonW, buttonH, 10);
-  rect(width / 4, easyButtonY, buttonW, buttonH, 10);
-  rect(width * 0.75, hardButtonY, buttonW, buttonH, 10);
-  textAlign(CENTER);
-  textSize(12);
-  fill("white");
-  text("Easy", width / 4, height * 0.764);
-  text("Medium", width / 2, height * 0.764);
-  text("Hard", width * 0.75, height * 0.764);
+  easyButton.show();
+  mediumButton.show();
+  hardButton.show();
+  
+  easyButton.mousePressed();
+  mediumButton.mousePressed();
+  hardButton.mousePressed();
 }
 
 function mouseClicked() {
@@ -240,69 +130,6 @@ function mouseClicked() {
   }
 }
 
-function mousePressed() {
-  if (screen === 0) {
-    easyButtonClicked = collidePointRect(
-      mouseX,
-      mouseY,
-      width / 4 - buttonW / 2,
-      easyButtonY - buttonH / 2,
-      buttonW,
-      buttonH
-    );
-    mediumButtonClicked = collidePointRect(
-      mouseX,
-      mouseY,
-      width / 2 - buttonW / 2,
-      mediumButtonY - buttonH / 2,
-      buttonW,
-      buttonH
-    );
-
-    hardButtonClicked = collidePointRect(
-      mouseX,
-      mouseY,
-      width * 0.75 - buttonW / 2,
-      hardButtonY - buttonH / 2,
-      buttonW,
-      buttonH
-    );
-    if (easyButtonClicked) {
-      select.play();
-
-      easyButtonY += 5;
-      level = 0;
-    } else if (mediumButtonClicked) {
-      mediumButtonY += 5;
-      level = 1;
-      select.play();
-    } else if (hardButtonClicked) {
-      hardButtonY += 5;
-      level = 2;
-      select.play();
-    }
-  }
-}
-function mouseReleased() {
-  if (screen === 0) {
-    if (easyButtonClicked) {
-      easyButtonClicked = false;
-      easyButtonY -= 7;
-      screen++;
-      setup();
-    } else if (mediumButtonClicked) {
-      mediumButtonClicked = false;
-      mediumButtonY -= 7;
-      screen++;
-      setup();
-    } else if (hardButtonClicked) {
-      hardButtonClicked = false;
-      hardButtonY -= 7;
-      screen++;
-      setup();
-    }
-  }
-}
 function keyPressed() {
   if (screen === 1 && key === "a") {
     currentVirus.isAttacked = false;
