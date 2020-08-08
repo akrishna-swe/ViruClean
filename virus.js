@@ -8,6 +8,8 @@ class Virus {
       -livingRoomImg.height * 0.05 + this.size,
       livingRoomImg.height * 0.7 - this.size
     );
+    
+   
     this.isAttacked = false;
     this.isAlive = true;
     this.maxSize = 150;
@@ -35,7 +37,7 @@ class Virus {
 
   grow() {
     if (this.size < this.maxSize) {
-      this.size += 0.25;
+      this.size += 1;
     } 
     else {
       handleHealth();
