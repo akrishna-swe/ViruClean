@@ -1,9 +1,11 @@
 /* CSS files add styling rules to your content */
 
+
 body {
   font-family: "Yanone Kaffeesatz";
   background: hsl(185, 100%, 95%);
   text-align: center;
+  
 }
 
 h1 {
