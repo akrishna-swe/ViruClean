@@ -18,9 +18,7 @@ function drawStartScreen() {
   textFont(title);
   textSize(50);
   textAlign(CENTER);
-  text("Viru    Clean", width / 2, height * 0.25);
-  image(virusImg, width* 0.4, height * .15, 70, 70)
-  //image(sprayBottleImg, width* 0.8, height * .155, 65, 65)
+  text("Viru   Clean", width / 2, height * 0.25);
   textFont(font);
   textSize(12);
   text(
@@ -29,9 +27,11 @@ function drawStartScreen() {
     height * 0.34
   );
   
-  image(pillImg, width* 0.27, height * .45, 65, 65)
-  image(vaccineImg, width* 0.62, height * .45, 70, 70)
-  
+  imageMode(CENTER);
+  image(sprayBottleImg, width* 0.46, height * .222, 70, 70)
+  image(pillImg, width* 0.32, height * .50, 65, 65)
+  image(vaccineImg, width* 0.67, height * .50, 70, 70)
+
   text("Pick a Level to Start", width / 2, height * 0.65);
   textSize(8);
   text("made for melonjam twentytwenty", width / 2, height * 0.95);
@@ -133,7 +133,7 @@ function playScreenSetup() {
     numViruses = 3;
     timer = 1500;
     //startingHealth = 1000;
-    numPills = 1;
+    numPills = 2;
     numVaccines = 2;
   } else if (level === 1) {
     numViruses = 6;
@@ -163,6 +163,8 @@ function playScreenSetup() {
   imgX = width / 2;
   imgY = height / 2;
 
+  pillIsUsed = false;
+  vaccineIsUsed = false;
   for (let i = 0; i < numViruses; i++) {
     viruses.push(new Virus());
   }
@@ -235,7 +237,7 @@ function drawPlayScreen() {
     if (viruses.length === 0) {
       gameOver("win");
     }
-  } else if (vaccineIsUsed) {
+  } else if (vaccineIsUsed && !gameIsOver) {
     healingText = "Wow, you're fully healed!";
     if (viruses.length === 0) {
       gameOver("win");
@@ -267,6 +269,7 @@ function drawPlayScreen() {
 
 /* ----------------------------END SCREEN --------------------------------------- */
 function gameOver(result) {
+  healingText = "";
   if (result === "health") {
     gameOverText = "Your health was too low to continue.";
   } else if (result === "time") {
